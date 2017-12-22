@@ -71,7 +71,6 @@ def final_deal(wating_deal_file, changed_list, sheet_data):
 
         if os.path.isdir(file_name):
             os.chdir(file_name)
-            sub_file_list = os.listdir(r".")
             final_deal(file_name, changed_list, sheet_data)
             os.chdir(root_dir)
         
