@@ -2,4 +2,7 @@
 
 Reorganize the downloaded patent from SIPO. Extract the pdf file and rename. Change the tif file to PDF and rename. Make a  statistical analysis .
 
+Update at 2018/3/5
+add GUI
+
 Python 3.6
