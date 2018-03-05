@@ -2,9 +2,12 @@ import os
 import shutil
 from reportlab.pdfgen import canvas
 import xlwt
+from appJar import gui
 
 def my_deal_file(file_name, changed_list, sheet_data): #only deal file in dir
+    
     sheet_data_element = []
+    
     tif_exit_flag = False
     
     if os.path.splitext(file_name)[1] in {'.zip','.ZIP'}:
@@ -48,8 +51,6 @@ def my_deal_file(file_name, changed_list, sheet_data): #only deal file in dir
                    
         if tif_exit_flag:
             pdf_file.save() #save pdf file
-            #shutil.move(pdf_file_name,pdf_file_to_position)       #move pdf file                                     
-            #shutil.make_archive(dealFileName,'zip', os.path.abspath(dealFileName)) #pack file
             changed_list.append(dealFileName+".zip")
 
         os.remove(file_name) #delete orginal file      
@@ -59,11 +60,11 @@ def my_deal_file(file_name, changed_list, sheet_data): #only deal file in dir
         sheet_data.append(sheet_data_element)
 
 
-def final_deal(wating_deal_file, changed_list, sheet_data):
+def final_deal(wating_deal_folder, changed_list, sheet_data):
 
-    root_dir = os.getcwd()
+    os.chdir(wating_deal_folder)
 
-    file_list = os.listdir(root_dir)
+    file_list = os.listdir(wating_deal_folder)
 
     for file_name in file_list:
         if os.path.isfile(file_name):        
@@ -72,43 +73,66 @@ def final_deal(wating_deal_file, changed_list, sheet_data):
         if os.path.isdir(file_name):
             os.chdir(file_name)
             final_deal(file_name, changed_list, sheet_data)
-            os.chdir(root_dir)
-        
+            os.chdir(wating_deal_folder)          
 
+def press_select(button):
+    if button=="button1":
+        temp = app.directoryBox("Select a path")
+        if temp:
+            root_dir = temp
+            app.setEntry("源文件夹路径", root_dir)
 
-file_list = os.listdir(r".")
+def press_action(button):
+    if button=="开始":
+        action()
+        changed_list.clear()
+        sheet_data.clear()
+    if button=="清空":
+        app.清空Entry("源文件夹路径")
 
-print('待整理文件数：{0}\n'.format(len(file_list)))
+def action():
+    file_list = os.listdir(r".")
 
-print('已处理文件:')
+    print('待整理文件数：{0}\n'.format(len(file_list)))
 
+    print('已处理文件:')    
+
+    final_deal(app.getEntry("源文件夹路径"),changed_list, sheet_data)
+
+    print("\n以下专利被整理：")
+
+    for i in changed_list:
+        print(i)
+
+    print("\n已创建Excel:汇总.xls\n")
+
+    wbk = xlwt.Workbook()
+    sheet = wbk.add_sheet('sheet 1')
+    sheet.write(0,0,'专利名称')#第0行第一列写入内容
+    sheet.write(0,1,'申请号')
+    sheet.write(0,2,'申请日')
+    sheet.write(0,3,'公开号')
+    sheet.write(0,4,'公开日')
+    row = 1
+
+    for data in sheet_data:
+        sheet.write(row,0,data[0])
+        sheet.write(row,1,data[1])
+        sheet.write(row,3,data[2])
+        row = row+1
+
+    wbk.save('汇总.xls')
+    print('任务完成!!!!!!!!')
+    
+root_dir = os.getcwd()
 changed_list = []
 sheet_data = []
-root_dir = os.getcwd()
+app = gui("to PDF","450x70")
+app.setResizable(False)
 
-final_deal(root_dir,changed_list, sheet_data)
+app.addLabelEntry("源文件夹路径",0,0)
+app.setEntry("源文件夹路径",root_dir)
+app.addNamedButton("选择","button1",press_select,0,1)
 
-print("\n以下专利被整理：")
-
-for i in changed_list:
-    print(i)
-
-print("\n已创建Excel:汇总.xls\n")
-
-wbk = xlwt.Workbook()
-sheet = wbk.add_sheet('sheet 1')
-sheet.write(0,0,'专利名称')#第0行第一列写入内容
-sheet.write(0,1,'申请号')
-sheet.write(0,2,'申请日')
-sheet.write(0,3,'公开号')
-sheet.write(0,4,'公开日')
-row = 1
-
-for data in sheet_data:
-    sheet.write(row,0,data[0])
-    sheet.write(row,1,data[1])
-    sheet.write(row,3,data[2])
-    row = row+1
-
-wbk.save('汇总.xls')
-os.system("Pause")
+app.addButtons(["开始", "清空"], press_action)
+app.go()
