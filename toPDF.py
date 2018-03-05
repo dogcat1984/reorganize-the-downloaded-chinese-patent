@@ -88,7 +88,7 @@ def press_action(button):
         changed_list.clear()
         sheet_data.clear()
     if button=="清空":
-        app.清空Entry("源文件夹路径")
+        app.clearEntry("源文件夹路径")
 
 def action():
     file_list = os.listdir(r".")
