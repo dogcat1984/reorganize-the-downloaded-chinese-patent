@@ -7,3 +7,6 @@ Update at 2018/3/5
 1.add GUI
 
 Python 3.6
+
+Update at 2018/3/26
+1.Fix bugs!
