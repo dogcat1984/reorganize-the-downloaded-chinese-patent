@@ -71,8 +71,9 @@ def final_deal(wating_deal_folder, changed_list, sheet_data):
             my_deal_file(file_name, changed_list, sheet_data) 
 
         if os.path.isdir(file_name):
-            os.chdir(file_name)
-            final_deal(file_name, changed_list, sheet_data)
+            trench_name = os.path.abspath(file_name)
+            os.chdir(trench_name)
+            final_deal(trench_name, changed_list, sheet_data)
             os.chdir(wating_deal_folder)          
 
 def press_select(button):
@@ -91,13 +92,17 @@ def press_action(button):
         app.clearEntry("源文件夹路径")
 
 def action():
-    file_list = os.listdir(r".")
+    deal_dir= app.getEntry("源文件夹路径")
+    file_list = os.listdir(deal_dir)
+    os.chdir(deal_dir)
+    
+    print(file_list)
 
     print('待整理文件数：{0}\n'.format(len(file_list)))
 
-    print('已处理文件:')    
+    print('已处理文件:')
 
-    final_deal(app.getEntry("源文件夹路径"),changed_list, sheet_data)
+    final_deal(os.path.abspath(deal_dir),changed_list, sheet_data)
 
     print("\n以下专利被整理：")
 
@@ -115,14 +120,17 @@ def action():
     sheet.write(0,4,'公开日')
     row = 1
 
-    for data in sheet_data:
-        sheet.write(row,0,data[0])
-        sheet.write(row,1,data[1])
-        sheet.write(row,3,data[2])
-        row = row+1
-
-    wbk.save('汇总.xls')
-    print('任务完成!!!!!!!!')
+    try:
+        for data in sheet_data:
+            sheet.write(row,0,data[0])
+            sheet.write(row,1,data[1])
+            sheet.write(row,3,data[2])
+            row = row+1
+    except:
+        pass
+    finally:
+        wbk.save('汇总.xls')
+        print('任务完成!!!!!!!!')
     
 root_dir = os.getcwd()
 changed_list = []
