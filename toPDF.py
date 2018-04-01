@@ -14,15 +14,9 @@ def my_deal_file(file_name, changed_list, sheet_data): #only deal file in dir
         dealFileName = os.path.splitext(file_name)[0]
         print(dealFileName+'.zip')
         
-        try:
-            os.makedirs(dealFileName)                            #make unpackDir
-        except:
-            return
+        os.makedirs(dealFileName)                            #make unpackDir
         
-        try:
-            shutil.unpack_archive(file_name, dealFileName)  #unpack file
-        except:
-            return
+        shutil.unpack_archive(file_name, dealFileName)  #unpack file
 
         sheet_data_element.append(dealFileName)
 
@@ -68,7 +62,11 @@ def final_deal(wating_deal_folder, changed_list, sheet_data):
 
     for file_name in file_list:
         if os.path.isfile(file_name):        
-            my_deal_file(file_name, changed_list, sheet_data) 
+            try:
+                my_deal_file(file_name, changed_list, sheet_data)
+            except:
+                print("FOUND ERROR AT "+file_name)
+                continue
 
         if os.path.isdir(file_name):
             trench_name = os.path.abspath(file_name)
