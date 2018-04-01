@@ -11,3 +11,7 @@ Python 3.6
 Update at 2018/3/26
 
 1.Fix bugs!
+
+Update at 2018/4/1
+
+1.Fix bugs!
