@@ -12,6 +12,7 @@ Update at 2018/3/26
 
 1.Fix bugs!
 
-Update at 2018/4/1
+Update at 2018/4/2
 
 1.Fix bugs!
+2.Add statistics function
