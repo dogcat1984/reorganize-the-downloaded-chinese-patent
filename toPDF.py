@@ -4,15 +4,40 @@ from reportlab.pdfgen import canvas
 import xlwt
 from appJar import gui
 
-def my_deal_file(file_name, changed_list, sheet_data): #only deal file in dir
+global total_file_numbers
+global dealed_file_numbers
+
+def count_file_numbers(wating_deal_folder):
+
+    global total_file_numbers
+
+    os.chdir(wating_deal_folder)
+
+    file_list = os.listdir(wating_deal_folder)
+
+    for file_name in file_list:
+        if os.path.isfile(file_name):
+            if os.path.splitext(file_name)[1] in {'.zip','.ZIP'}:
+                total_file_numbers+=1
+
+        if os.path.isdir(file_name):
+            trench_name = os.path.abspath(file_name)
+            os.chdir(trench_name)
+            count_file_numbers(trench_name)
+            os.chdir(wating_deal_folder)     
+
+def deal_file(file_name, changed_list, sheet_data): #only deal file in dir
     
+    global dealed_file_numbers
     sheet_data_element = []
     
     tif_exit_flag = False
     
     if os.path.splitext(file_name)[1] in {'.zip','.ZIP'}:
         dealFileName = os.path.splitext(file_name)[0]
-        print(dealFileName+'.zip')
+        dealed_file_numbers+=1
+        
+        print('{0}/{1} {2}'.format(dealed_file_numbers, total_file_numbers, file_name))
         
         os.makedirs(dealFileName)                            #make unpackDir
         
@@ -54,7 +79,7 @@ def my_deal_file(file_name, changed_list, sheet_data): #only deal file in dir
         sheet_data.append(sheet_data_element)
 
 
-def final_deal(wating_deal_folder, changed_list, sheet_data):
+def deal_folder(wating_deal_folder, changed_list, sheet_data):
 
     os.chdir(wating_deal_folder)
 
@@ -63,7 +88,7 @@ def final_deal(wating_deal_folder, changed_list, sheet_data):
     for file_name in file_list:
         if os.path.isfile(file_name):        
             try:
-                my_deal_file(file_name, changed_list, sheet_data)
+                deal_file(file_name, changed_list, sheet_data)
             except:
                 print("FOUND ERROR AT "+file_name)
                 continue
@@ -71,7 +96,7 @@ def final_deal(wating_deal_folder, changed_list, sheet_data):
         if os.path.isdir(file_name):
             trench_name = os.path.abspath(file_name)
             os.chdir(trench_name)
-            final_deal(trench_name, changed_list, sheet_data)
+            deal_folder(trench_name, changed_list, sheet_data)
             os.chdir(wating_deal_folder)          
 
 def press_select(button):
@@ -90,17 +115,17 @@ def press_action(button):
         app.clearEntry("源文件夹路径")
 
 def action():
+    global total_file_numbers
     deal_dir= app.getEntry("源文件夹路径")
     file_list = os.listdir(deal_dir)
     os.chdir(deal_dir)
-    
-    print(file_list)
-
-    print('待整理文件数：{0}\n'.format(len(file_list)))
+    print("正在统计需整理文件数目......")
+    count_file_numbers(deal_dir)
+    print('待整理文件数：{0}\n'.format(total_file_numbers))
 
     print('已处理文件:')
 
-    final_deal(os.path.abspath(deal_dir),changed_list, sheet_data)
+    deal_folder(os.path.abspath(deal_dir),changed_list, sheet_data)
 
     print("\n以下专利被整理：")
 
@@ -129,7 +154,11 @@ def action():
     finally:
         wbk.save('汇总.xls')
         print('任务完成!!!!!!!!')
-    
+    total_file_numbers=0
+    dealed_file_numbers=0
+
+total_file_numbers=0
+dealed_file_numbers=0
 root_dir = os.getcwd()
 changed_list = []
 sheet_data = []
