@@ -23,7 +23,6 @@ def count_file_numbers(wating_deal_folder):
 
         if os.path.isdir(file_name):
             trench_name = os.path.abspath(file_name)
-            os.chdir(trench_name)
             count_file_numbers(trench_name)
             os.chdir(wating_deal_folder)     
 
