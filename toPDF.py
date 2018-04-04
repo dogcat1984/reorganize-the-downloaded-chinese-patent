@@ -19,6 +19,7 @@ def count_file_numbers(wating_deal_folder):
         if os.path.isfile(file_name):
             if os.path.splitext(file_name)[1] in {'.zip','.ZIP'}:
                 total_file_numbers+=1
+                to_deal_file_list.append(os.path.abspath(file_name))
 
         if os.path.isdir(file_name):
             trench_name = os.path.abspath(file_name)
@@ -26,78 +27,71 @@ def count_file_numbers(wating_deal_folder):
             count_file_numbers(trench_name)
             os.chdir(wating_deal_folder)     
 
-def deal_file(file_name, changed_list, sheet_data): #only deal file in dir
+def deal_file(file_absDir): #only deal file in dir
     
     global dealed_file_numbers
     sheet_data_element = []
+
+    file_dir = os.path.dirname(file_absDir)
+    file_name = os.path.basename(file_absDir)
+
+    os.chdir(file_dir)
     
     tif_exit_flag = False
     
-    if os.path.splitext(file_name)[1] in {'.zip','.ZIP'}:
-        dealFileName = os.path.splitext(file_name)[0]
-        dealed_file_numbers+=1
+    dealFileName = os.path.splitext(file_name)[0]
+    dealed_file_numbers+=1
         
-        print('{0}/{1} {2}'.format(dealed_file_numbers, total_file_numbers, file_name))
+    print('{0}/{1} {2}'.format(dealed_file_numbers, total_file_numbers, file_name))
         
-        os.makedirs(dealFileName)                            #make unpackDir
+    os.makedirs(dealFileName)                            #make unpackDir
         
-        shutil.unpack_archive(file_name, dealFileName)  #unpack file
+    shutil.unpack_archive(file_name, dealFileName)  #unpack file
 
-        sheet_data_element.append(dealFileName)
+    sheet_data_element.append(dealFileName)
 
-        pdf_file_name = dealFileName+".pdf"        
-        pdf_file = canvas.Canvas(pdf_file_name) #creat pdf        
+    pdf_file_name = dealFileName+".pdf"        
+    pdf_file = canvas.Canvas(pdf_file_name) #creat pdf        
         
-        mdir_list = os.listdir(dealFileName) #write to excel_data
-        for mdir in mdir_list:
-            if os.path.isdir(os.path.join(dealFileName, mdir)):
-                number_list = mdir.split('_')
-                if len(number_list)>1:
-                    sheet_data_element.append(number_list[0])
-                    sheet_data_element.append(number_list[1])                
+    mdir_list = os.listdir(dealFileName) #write to excel_data
+    for mdir in mdir_list:
+        if os.path.isdir(os.path.join(dealFileName, mdir)):
+            number_list = mdir.split('_')
+            if len(number_list)>1:
+                sheet_data_element.append(number_list[0])
+                sheet_data_element.append(number_list[1])                
             
-        for root, dirs, files in os.walk(dealFileName):       
-            for file in files:
-                final_file = os.path.join(root, file)
-                if os.path.splitext(final_file)[1] in {'.tif', '.TIF'}:
-                    tif_exit_flag = True;
-                    pdf_file.drawImage(final_file,0,0,590,892,None,True,'c')
-                    pdf_file.showPage()       #save current pdf page
+    for root, dirs, files in os.walk(dealFileName):       
+        for file in files:
+            final_file = os.path.join(root, file)
+            if os.path.splitext(final_file)[1] in {'.tif', '.TIF'}:
+                tif_exit_flag = True;
+                pdf_file.drawImage(final_file,0,0,590,892,None,True,'c')
+                pdf_file.showPage()       #save current pdf page
 
-                if os.path.splitext(final_file)[1] in {'.pdf','.PDF'}:
-                    target_file = dealFileName+'.pdf'
-                    shutil.move(final_file,target_file) #move pdf to root
+            if os.path.splitext(final_file)[1] in {'.pdf','.PDF'}:
+                target_file = dealFileName+'.pdf'
+                shutil.move(final_file,target_file) #move pdf to root
                    
-        if tif_exit_flag:
-            pdf_file.save() #save pdf file
-            changed_list.append(dealFileName+".zip")
+    if tif_exit_flag:
+        pdf_file.save() #save pdf file
+        changed_list.append(dealFileName+".zip")
 
-        os.remove(file_name) #delete orginal file      
+    os.remove(file_name) #delete orginal file      
 
-        shutil.rmtree(dealFileName) #remove the unpackFile
+    shutil.rmtree(dealFileName) #remove the unpackFile
 
-        sheet_data.append(sheet_data_element)
+    sheet_data.append(sheet_data_element)
 
 
-def deal_folder(wating_deal_folder, changed_list, sheet_data):
+def deal_folder():
 
-    os.chdir(wating_deal_folder)
-
-    file_list = os.listdir(wating_deal_folder)
-
-    for file_name in file_list:
-        if os.path.isfile(file_name):        
-            try:
-                deal_file(file_name, changed_list, sheet_data)
-            except:
-                print("FOUND ERROR AT "+file_name)
-                continue
-
-        if os.path.isdir(file_name):
-            trench_name = os.path.abspath(file_name)
-            os.chdir(trench_name)
-            deal_folder(trench_name, changed_list, sheet_data)
-            os.chdir(wating_deal_folder)          
+    for file in to_deal_file_list:
+        try:
+            deal_file(file)
+        except:
+            print('FOUND ERROR AT '+file)
+                        
 
 def press_select(button):
     if button=="button1":
@@ -125,7 +119,9 @@ def action():
 
     print('已处理文件:')
 
-    deal_folder(os.path.abspath(deal_dir),changed_list, sheet_data)
+    deal_folder()
+
+    os.chdir(deal_dir)
 
     print("\n以下专利被整理：")
 
@@ -160,6 +156,7 @@ def action():
 total_file_numbers=0
 dealed_file_numbers=0
 root_dir = os.getcwd()
+to_deal_file_list = []
 changed_list = []
 sheet_data = []
 app = gui("to PDF","450x70")
@@ -171,3 +168,4 @@ app.addNamedButton("选择","button1",press_select,0,1)
 
 app.addButtons(["开始", "清空"], press_action)
 app.go()
+
