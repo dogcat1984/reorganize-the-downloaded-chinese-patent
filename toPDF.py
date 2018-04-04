@@ -103,6 +103,7 @@ def press_select(button):
 def press_action(button):
     if button=="开始":
         action()
+        to_deal_file_list.clear()
         changed_list.clear()
         sheet_data.clear()
     if button=="清空":
