@@ -3,6 +3,7 @@ import shutil
 from reportlab.pdfgen import canvas
 import xlwt
 from appJar import gui
+import datetime
 
 global total_file_numbers
 global dealed_file_numbers
@@ -126,9 +127,10 @@ def action():
     print("\n以下专利被整理：")
 
     for i in changed_list:
-        print(i)
+        print(i)    
 
-    print("\n已创建Excel:汇总.xls\n")
+    nowTime=datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
+    print("\n已创建Excel:汇总"+nowTime+".xls\n")
 
     wbk = xlwt.Workbook()
     sheet = wbk.add_sheet('sheet 1')
@@ -148,7 +150,7 @@ def action():
     except:
         pass
     finally:
-        wbk.save('汇总.xls')
+        wbk.save('汇总'+nowTime+'.xls')
         print('任务完成!!!!!!!!')
     total_file_numbers=0
     dealed_file_numbers=0
@@ -168,4 +170,3 @@ app.addNamedButton("选择","button1",press_select,0,1)
 
 app.addButtons(["开始", "清空"], press_action)
 app.go()
-
