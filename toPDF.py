@@ -85,7 +85,6 @@ def deal_file(file_absDir): #only deal file in dir
 
 
 def deal_folder():
-
     for file in to_deal_file_list:
         try:
             deal_file(file)
@@ -97,21 +96,40 @@ def press_select(button):
     if button=="button1":
         temp = app.directoryBox("Select a path")
         if temp:
-            root_dir = temp
-            app.setEntry("源文件夹路径", root_dir)
+            app.setEntry("文件夹路径", temp)
+    if button=="button2":
+        temp = app.openBox("Select a file",fileTypes=[("packfiles",".zip"),(("packfiles",".ZIP"))])
+        if temp:
+            app.setEntry("文件路径", temp)
 
 def press_action(button):
     if button=="开始":
-        action()
-        to_deal_file_list.clear()
-        changed_list.clear()
-        sheet_data.clear()
+        flag=0
+        if app.getEntry("文件夹路径"):
+            process_folder()
+            flag=1
+        if app.getEntry("文件路径"):
+            process_file()
+            flag=1
+        if flag:
+            display_dealed_files()
+            write_to_excel()       
     if button=="清空":
-        app.clearEntry("源文件夹路径")
+        app.clearEntry("文件夹路径")
+        app.clearEntry("文件路径")
 
-def action():
+def process_file():
     global total_file_numbers
-    deal_dir= app.getEntry("源文件夹路径")
+    total_file_numbers+=1
+    file = app.getEntry("文件路径")
+    try:
+        deal_file(file)
+    except:
+        print('FOUND ERROR AT '+file)    
+
+def process_folder():
+    global total_file_numbers
+    deal_dir= app.getEntry("文件夹路径")
     file_list = os.listdir(deal_dir)
     os.chdir(deal_dir)
     print("正在统计需整理文件数目......")
@@ -124,11 +142,13 @@ def action():
 
     os.chdir(deal_dir)
 
+def display_dealed_files():
     print("\n以下专利被整理：")
-
     for i in changed_list:
-        print(i)    
+        print(i)
+    changed_list.clear()    
 
+def write_to_excel():
     nowTime=datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
     print("\n已创建Excel:汇总"+nowTime+".xls\n")
 
@@ -154,19 +174,21 @@ def action():
         print('任务完成!!!!!!!!')
     total_file_numbers=0
     dealed_file_numbers=0
+    to_deal_file_list.clear()    
+    sheet_data.clear()
 
 total_file_numbers=0
 dealed_file_numbers=0
-root_dir = os.getcwd()
 to_deal_file_list = []
 changed_list = []
 sheet_data = []
-app = gui("to PDF","450x70")
+app = gui("to PDF")
 app.setResizable(False)
 
-app.addLabelEntry("源文件夹路径",0,0)
-app.setEntry("源文件夹路径",root_dir)
+app.addLabelEntry("文件夹路径",0,0)
 app.addNamedButton("选择","button1",press_select,0,1)
+app.addLabelEntry("文件路径",1,0)
+app.addNamedButton("选择","button2",press_select,1,1)
 
 app.addButtons(["开始", "清空"], press_action)
 app.go()
