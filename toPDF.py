@@ -120,10 +120,13 @@ def press_action(button):
 
 def process_file():
     global total_file_numbers
+    global dealed_file_numbers
     total_file_numbers+=1
     file = app.getEntry("文件路径")
     try:
         deal_file(file)
+        total_file_numbers = 0
+        dealed_file_numbers = 0
     except:
         print('FOUND ERROR AT '+file)    
 
