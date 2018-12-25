@@ -17,3 +17,6 @@ Update at 2018/4/2
 1.Fix bugs!
 
 2.Add statistics function
+
+Update at 2018/12/25
+1.Add single file surport.
